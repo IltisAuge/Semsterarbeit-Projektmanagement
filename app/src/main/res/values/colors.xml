@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="textPrimary">@color/black</color>
+    <color name="colorPrimary">#303F9F</color>
+    <color name="colorSecondary">@color/material_dynamic_primary10</color>
 </resources>

@@ -1,0 +1,5 @@
+{
+	"Technik": ["Informatik", "Elektrotechnik", "Maschinenbau"],
+	"Wirtschaft": ["BWL", "VWL", "Wirtschaftsinformatik"],
+	"Sozialwesen": ["Soziale Arbeit", "Sozialpädagogik", "Sozialwissenschaften"]
+}
