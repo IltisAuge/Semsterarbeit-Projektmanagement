@@ -11,6 +11,10 @@ android {
         enable = true
     }
 
+    viewBinding{
+        enable = true
+    }
+
     defaultConfig {
         applicationId = "de.dhbwstuttgart.semesterarbeit_projektmanagement"
         minSdk = 24
@@ -46,6 +50,8 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.navigation.fragment.ktx)
+    implementation(libs.androidx.navigation.ui.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
