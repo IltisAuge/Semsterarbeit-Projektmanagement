@@ -87,7 +87,7 @@ class RegisterNextActivity : AppCompatActivity() {
             startActivity(
                 LoginUtil.loginAndGetIntent(applicationContext, user),
                 ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
-            Toast.makeText(applicationContext, "Registrierung erfolgreich", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "Dein Konto wurde erstellte", Toast.LENGTH_SHORT).show()
             finish()
         }
     }
