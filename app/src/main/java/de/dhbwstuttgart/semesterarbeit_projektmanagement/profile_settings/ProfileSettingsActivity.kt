@@ -41,6 +41,7 @@ class ProfileSettingsActivity : AppCompatActivity() {
     private lateinit var activeTagsList: ArrayList<String>
     private lateinit var tagListAdapter: ArrayAdapter<String>
     private lateinit var chooseImgBtn: Button
+    private lateinit var deleteImgBtn: Button
     private lateinit var profileImg: ImageView
 
     private var hobbys: ArrayList<String> = arrayListOf(
@@ -58,8 +59,10 @@ class ProfileSettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         chooseImgBtn = binding.chooseProfilePictureBtn
+        deleteImgBtn = binding.deleteProfilePictureBtn
         profileImg = binding.profilePicture
         setupProfilePictureBtn()
+        setupDeleteProfilePictureBtn()
         loadProfilePicture()
 
         tagsListView = findViewById(R.id.tags_list)
@@ -105,6 +108,24 @@ class ProfileSettingsActivity : AppCompatActivity() {
         }
     }
 
+    fun setupDeleteProfilePictureBtn() {
+        deleteImgBtn.setOnClickListener {
+            val file = File(applicationContext.filesDir, "profile-picture")
+            if (file.exists()) {
+                file.delete()
+            }
+            val confirmDialog = AlertDialog.Builder(this)
+            confirmDialog.setTitle("Löschen")
+            confirmDialog.setMessage("Möchtest du dein Profilbild wirklich löschen?")
+            confirmDialog.setPositiveButton("Ja") { dialog, which ->
+                profileImg.setImageResource(R.mipmap.blank_pp)
+                Toast.makeText(applicationContext, "Dein Profilbild wurde entfernt", Toast.LENGTH_SHORT).show()
+            }
+            confirmDialog.setNegativeButton("Nein") { dialog, which -> }
+            confirmDialog.show()
+        }
+    }
+
     fun loadProfilePicture() {// Load existing profile picture if available
         val imgFile = File(applicationContext.filesDir, "profile-picture")
         if (imgFile.exists()) {
@@ -116,6 +137,8 @@ class ProfileSettingsActivity : AppCompatActivity() {
                 bufferedIs.close()
                 it?.close()
             }
+        } else {
+            profileImg.setImageResource(R.mipmap.blank_pp)
         }
     }
 

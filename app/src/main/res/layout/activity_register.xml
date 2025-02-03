@@ -61,7 +61,7 @@
                 android:inputType="textPassword" />
 
             <Button
-                style="@style/CustomButton"
+                style="@style/blue_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/next_button"

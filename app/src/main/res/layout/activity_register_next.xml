@@ -75,7 +75,7 @@
                 android:spinnerMode="dropdown"/>
 
             <Button
-                style="@style/CustomButton"
+                style="@style/blue_btn"
                 android:id="@+id/register_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
