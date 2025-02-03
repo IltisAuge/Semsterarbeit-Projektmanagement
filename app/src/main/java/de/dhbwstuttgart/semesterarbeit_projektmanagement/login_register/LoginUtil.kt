@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import org.json.JSONObject
+import java.io.File
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -26,6 +27,22 @@ object LoginUtil {
             }
         }
         return null
+    }
+
+    fun getLocalUserUUID(applicationContext: Context) : String? {
+        val file = File(applicationContext.filesDir, "local-user.json")
+        if (!file.exists()) {
+            file.createNewFile()
+            file.writeText(
+                "{ 'uuid': '083509e0-83f8-49da-acb7-e5850f039d3e' }"
+            )
+        }
+        // TODO: Remove the code above after integration with login activity
+        val localUser = FileUtil.readJSON("local-user.json", applicationContext)
+        if (!localUser.has("uuid") || localUser.get("uuid") == "") {
+            return null
+        }
+        return localUser.getString("uuid")
     }
 
     fun loginAndGetIntent(applicationContext: Context, user: JSONObject) : Intent {

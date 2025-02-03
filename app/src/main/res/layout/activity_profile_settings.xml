@@ -45,7 +45,8 @@
                     app:layout_constraintDimensionRatio="H,1:1"
                     tools:layout_editor_absoluteX="105dp"
                     tools:layout_editor_absoluteY="0dp"
-                    tools:srcCompat="@tools:sample/avatars" />
+                    tools:srcCompat="@mipmap/blank_pp"
+                    tools:ignore="MissingConstraints" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

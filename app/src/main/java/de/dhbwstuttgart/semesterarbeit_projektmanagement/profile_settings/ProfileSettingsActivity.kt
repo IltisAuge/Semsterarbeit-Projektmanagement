@@ -1,24 +1,37 @@
 package de.dhbwstuttgart.semesterarbeit_projektmanagement.profile_settings
 
 import android.content.Intent
+import android.graphics.BitmapFactory
+import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.InputType
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toFile
+import androidx.fragment.app.DialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityProfileSettingsBinding
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.LoginUtil
+import org.json.JSONArray
+import org.json.JSONObject
+import java.io.BufferedInputStream
 import java.io.File
+import java.net.URLConnection
 
 class ProfileSettingsActivity : AppCompatActivity() {
 
@@ -26,8 +39,9 @@ class ProfileSettingsActivity : AppCompatActivity() {
     private lateinit var tagsListView: ListView
     private lateinit var addTagBtn: FloatingActionButton
     private lateinit var activeTagsList: ArrayList<String>
-    private lateinit var tagsAdapter: ArrayAdapter<String>
+    private lateinit var tagListAdapter: ArrayAdapter<String>
     private lateinit var chooseImgBtn: Button
+    private lateinit var profileImg: ImageView
 
     private var hobbys: ArrayList<String> = arrayListOf(
         "Acroyoga", "Apnoetauchen", "Badminton", "Baseball", "Basketball", "Bauchtanz", "Bergsteigen", "BMX", "Bodybuilding", "Boxen", "Cheerleading", "Darts",
@@ -44,11 +58,41 @@ class ProfileSettingsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         chooseImgBtn = binding.chooseProfilePictureBtn
-        val profileImg = binding.profilePicture
+        profileImg = binding.profilePicture
+        setupProfilePictureBtn()
+        loadProfilePicture()
+
+        tagsListView = findViewById(R.id.tags_list)
+        addTagBtn = findViewById(R.id.TagAdd)
+        activeTagsList = loadSavedTags()
+
+        activeTagsList.add("DHBW Student")
+
+        tagListAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, activeTagsList)
+        tagsListView.adapter = tagListAdapter
+
+        addTagBtn.setOnClickListener {
+            openAvailableTagsDialog()
+        }
+
+        // Long click listener to delete items
+        tagsListView.setOnItemLongClickListener { parent, view, position, id ->
+            val tagToRemove = activeTagsList[position]
+            // Prevent the deletion of the "DHBW Student" tag
+            if (tagToRemove == "DHBW Student") {
+                Toast.makeText(applicationContext, "Du kannst diesen Tag nicht löschen!", Toast.LENGTH_SHORT).show()
+                return@setOnItemLongClickListener true
+            }
+            openDeleteConfirmationDialog(tagToRemove, position)
+        }
+    }
+
+    fun setupProfilePictureBtn() {
         val resultLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri == null) return@registerForActivityResult
 
             val file = File(applicationContext.filesDir, "profile-picture")
+            file.createNewFile()
             uri.let { applicationContext.contentResolver.openInputStream(it) }.use { input ->
                 file.outputStream().use { output ->
                     input?.copyTo(output)
@@ -59,106 +103,150 @@ class ProfileSettingsActivity : AppCompatActivity() {
         chooseImgBtn.setOnClickListener {
             resultLauncher.launch("image/*")
         }
+    }
 
-        tagsListView = findViewById(R.id.tags_list)
-        addTagBtn = findViewById(R.id.TagAdd)
-        activeTagsList = ArrayList()
-
-        activeTagsList.add("DHBW Student")
-
-        tagsAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, activeTagsList)
-        tagsListView.adapter = tagsAdapter
-        addTagBtn.setOnClickListener {
-            var builder = AlertDialog.Builder(this)
-            builder.setTitle("Suche")
-
-            // Ersetze EditText durch AutoCompleteTextView
-            val input = AutoCompleteTextView(this)
-            input.hint = "Tag hinzufügen"
-            input.inputType = InputType.TYPE_CLASS_TEXT
-
-            // Adapter für AutoCompleteTextView erstellen
-            val allTags = hobbys + companies  // Kombiniere Hobbys und Fächer
-            val autoCompleteAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, allTags)
-            input.setAdapter(autoCompleteAdapter)
-
-            // Setze den Threshold auf 1, damit Vorschläge beim ersten Buchstaben angezeigt werden
-            input.threshold = 1
-
-            builder.setView(input)
-
-            // Add the Show Tags button
-            builder.setNeutralButton("Verfügbare Tags anzeigen") { dialog, which ->
-                // Zeige alle Tags (Hobbys und Subjects) in einem neuen Dialog
-                val allTagsDialog = AlertDialog.Builder(this)
-                allTagsDialog.setTitle("Verfügbare Tags")
-
-                // Alle Tags zusammenführen und alphabetisch sortieren
-                val combinedTags = (hobbys + companies).sorted()  // Tags sortieren
-
-                val tagsAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, combinedTags)
-                val tagsListView = ListView(this)
-                tagsListView.adapter = tagsAdapter
-                allTagsDialog.setView(tagsListView)
-
-                allTagsDialog.setPositiveButton("Ok") { dialog, which -> }
-                allTagsDialog.show()
+    fun loadProfilePicture() {// Load existing profile picture if available
+        val imgFile = File(applicationContext.filesDir, "profile-picture")
+        if (imgFile.exists()) {
+            val uri = Uri.fromFile(imgFile)
+            uri.let { applicationContext.contentResolver.openInputStream(it) }.use {
+                val bufferedIs = BufferedInputStream(it)
+                val bitmap = BitmapFactory.decodeStream(bufferedIs)
+                profileImg.setImageBitmap(bitmap)
+                bufferedIs.close()
+                it?.close()
             }
+        }
+    }
 
-            builder.setPositiveButton("Ok") { dialog, which ->
-                val tag = input.text.toString()
+    fun openAvailableTagsDialog() {
+        var availableTags = filterAvailableTags()
+        println("Available: $availableTags")
 
-                // Überprüfen, ob der Tag in den Hobbys oder den Fächern ist
-                if (hobbys.contains(tag)) {
-                    if (!activeTagsList.contains(tag)) {
-                        activeTagsList.add(tag)
-                        tagsAdapter.notifyDataSetChanged()
-                        Toast.makeText(applicationContext, "Tag '$tag' wurde hinzugefügt", Toast.LENGTH_SHORT).show()
-                        // Save tag in file
-                    } else {
-                        Toast.makeText(applicationContext, "Du hast diesen Tag bereits!", Toast.LENGTH_SHORT).show()
-                    }
-                } else if (companies.contains(tag)) {
-                    // Überprüfen, ob bereits ein Fach vorhanden ist
-                    if (activeTagsList.any { companies.contains(it) }) {
-                        Toast.makeText(applicationContext, "Du kannst nur in einem Unternehmen sein!", Toast.LENGTH_SHORT).show()
-                    } else {
-                        if (!activeTagsList.contains(tag)) {
-                            activeTagsList.add(tag)
-                            tagsAdapter.notifyDataSetChanged()
-                            // Save tag in file
-                            Toast.makeText(applicationContext, "Unternehmens-Tag wurde hinzugefügt", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(applicationContext, "Du bist bereits in diesem Unternehmen!", Toast.LENGTH_SHORT).show()
-                        }
-                    }
+        val availableTagsDialogBuilder = AlertDialog.Builder(this)
+        val availableTagsView = ListView(this)
+        val availableTagsAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, availableTags)
+
+        availableTagsView.adapter = availableTagsAdapter
+        availableTagsDialogBuilder.setView(availableTagsView)
+        availableTagsDialogBuilder.setTitle("Verfügbare Tags")
+        lateinit var availableTagsDialog: AlertDialog
+
+        availableTagsView.setOnItemClickListener { parent, view, position, id ->
+            val confirmDialog = AlertDialog.Builder(this)
+            val tag = availableTags.get(position)
+            confirmDialog.setTitle("Tag hinzufügen")
+            confirmDialog.setMessage("Möchtest du den Tag '$tag' hinzufügen?")
+            confirmDialog.setPositiveButton("Ja") { dialog, which ->
+                activeTagsList.add(tag)
+                tagListAdapter.notifyDataSetChanged()
+                if (companies.contains(tag)) {
+                    Toast.makeText(applicationContext, "Unternehmens-Tag '$tag' wurde hinzugefügt", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(applicationContext, "Diesen Tag gibt es nicht!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Tag '$tag' wurde hinzugefügt", Toast.LENGTH_SHORT).show()
                 }
+                availableTagsDialog.dismiss()
+                saveTag(tag)
             }
-
-            builder.setNegativeButton("Abbrechen") { dialog, which ->
-            }
-
-            builder.show()
+            confirmDialog.setNegativeButton("Nein") { dialog, which -> }
+            confirmDialog.show()
         }
+        availableTagsDialogBuilder.setPositiveButton("Schließen") { dialog, which -> }
+        availableTagsDialog = availableTagsDialogBuilder.create()
+        availableTagsDialog.show()
+    }
 
-        // Long click listener to delete items
-        tagsListView.setOnItemLongClickListener { parent, view, position, id ->
+    fun getTagsFile() : File {
+        val tagsFile = File(applicationContext.filesDir, "tags.json")
+        if (!tagsFile.exists()) {
+            tagsFile.createNewFile()
+            tagsFile.writeText("{ }")
+        }
+        return tagsFile
+    }
 
-            val tagToRemove = activeTagsList[position]
+    fun loadSavedTags() : ArrayList<String> {
+        val list = ArrayList<String>()
+        val tagsFile = getTagsFile()
+        val uuid = LoginUtil.getLocalUserUUID(applicationContext)
+        if (uuid == null) {
+            return list
+        }
+        val fileObj = JSONObject(tagsFile.readText())
+        if (!fileObj.has(uuid)) {
+            return list
+        }
+        val activeTags = fileObj.getJSONArray(uuid)
+        for (tag in 0 until activeTags.length()) {
+            list.add(activeTags[tag].toString())
+        }
+        return list
+    }
 
-            // Prevent the deletion of the "DHBW Student" tag
-            if (tagToRemove == "DHBW Student") {
-                Toast.makeText(applicationContext, "Du kannst diesen Tag nicht löschen!", Toast.LENGTH_SHORT).show()
-                return@setOnItemLongClickListener true
+    fun saveTag(tag: String) {
+        val tagsFile = getTagsFile()
+        val uuid = LoginUtil.getLocalUserUUID(applicationContext)
+        if (uuid == null) {
+            return
+        }
+        val fileObj = JSONObject(tagsFile.readText())
+        val activeTags: JSONArray
+        if (fileObj.has(uuid)) {
+            activeTags = fileObj.getJSONArray(uuid)
+        } else {
+            activeTags = JSONArray()
+        }
+        activeTags.put(tag)
+        fileObj.put(uuid, activeTags)
+        FileUtil.writeJSON("tags.json", fileObj, applicationContext)
+    }
+
+    fun deleteSavedTag(tag: String) {
+        val tagsFile = getTagsFile()
+        val uuid = LoginUtil.getLocalUserUUID(applicationContext)
+        if (uuid == null) {
+            return
+        }
+        val fileObj = JSONObject(tagsFile.readText())
+        if (!fileObj.has(uuid)) {
+            return
+        }
+        val activeTags = fileObj.getJSONArray(uuid)
+        for (i in 0 until activeTags.length() - 1) {
+            if (activeTags.get(i) == tag) {
+                activeTags.remove(i)
             }
+        }
+        fileObj.put(uuid, activeTags)
+        FileUtil.writeJSON("tags.json", fileObj, applicationContext)
+    }
 
+    fun filterAvailableTags() : List<String> {
+        val hasCompanyTag = activeTagsList.any { companies.contains(it) }
+        var availableTags = (hobbys + companies).toMutableList().filter { tag -> !activeTagsList.contains(tag) }.sorted()
+        var size = availableTags.size
+        var newList = mutableListOf<String>()
+        for (i in 0 until size) {
+            val tag = availableTags.get(i)
+            if (!(companies.contains(tag) && hasCompanyTag)) {
+                newList.add(tag)
+            }
+        }
+        return newList
+    }
+
+    fun openDeleteConfirmationDialog(tagToRemove: String, position: Int) : Boolean {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Tag entfernen")
+        builder.setMessage("Willst du den Tag '$tagToRemove' entfernen?")
+        builder.setPositiveButton("Ja") { dialog, which ->
             activeTagsList.removeAt(position)
-            tagsAdapter.notifyDataSetChanged()  // Update the ListView
-
+            tagListAdapter.notifyDataSetChanged()  // Update the ListView
+            deleteSavedTag(tagToRemove)
             Toast.makeText(applicationContext, "Tag '$tagToRemove' wurde entfernt", Toast.LENGTH_SHORT).show()
-            true  // Return true to indicate that the long click event was handled
         }
+        builder.setNegativeButton("Nein") { dialog, which -> }
+        builder.show()
+        return true  // Return true to indicate that the long click event was handled
     }
 }
