@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityTestHomeBinding
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.profile_settings.ProfileSettingsActivity
 import org.json.JSONObject
 
 class TestHomeActivity : ComponentActivity() {
@@ -31,6 +32,10 @@ class TestHomeActivity : ComponentActivity() {
         val headline = binding.homeHeadline
         headline.setTitle("Willkommen ${intent.getStringExtra("name")}")
 
+        val profileImg = binding.profilePicture
+        val bitmap = UserUtils.getProfilePictureBitmap(applicationContext, resources)
+        profileImg.setImageBitmap(bitmap)
+
         listView = findViewById(R.id.itemlist)
         list = ArrayList()
         list.add("Informationen über dein Konto:")
@@ -41,6 +46,12 @@ class TestHomeActivity : ComponentActivity() {
         list.add("Passwort Hash: ${intent.getStringExtra("password")}")
         listAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, list)
         listView.adapter = listAdapter
+
+        val settingsButton = binding.settingsButton
+        settingsButton.setOnClickListener {
+            startActivity(Intent(applicationContext, ProfileSettingsActivity::class.java))
+            finish()
+        }
 
         val logoutButton = binding.logoutButton
         logoutButton.setOnClickListener {

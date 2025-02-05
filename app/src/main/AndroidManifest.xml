@@ -26,16 +26,16 @@
             android:exported="false" />
         <activity
             android:name=".profile_settings.ProfileSettingsActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".login_register.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".login_register.MainActivity"
-            android:exported="true">
         </activity>
     </application>
 

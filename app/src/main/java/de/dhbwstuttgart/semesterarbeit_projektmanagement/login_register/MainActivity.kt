@@ -37,11 +37,11 @@ class MainActivity : AppCompatActivity() {
             if (jsonObj.has("uuid")) {
                 println("user is in local file: uuid ${jsonObj.getString("uuid")}")
                 // User has an account/is logged in: Start HomeActivity with "uuid" extra
-                val user = LoginUtil.getUserbyUUID(applicationContext, jsonObj.getString("uuid"))
+                val user = UserUtils.getUserbyUUID(applicationContext, jsonObj.getString("uuid"))
                 if (user == null) {
                     return
                 }
-                val intent = LoginUtil.loginAndGetIntent(applicationContext, user)
+                val intent = UserUtils.loginAndGetIntent(applicationContext, user)
                 intent.putExtra("uuid", jsonObj.getString("uuid"))
                 startActivity(intent)
                 return

@@ -37,14 +37,14 @@ class LoginActivity : ComponentActivity() {
                 Toast.makeText(applicationContext, "Bitte fülle die Felder oben aus!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val user = LoginUtil.getUserbyEmail(applicationContext, emailInput.text.toString())
+            val user = UserUtils.getUserbyEmail(applicationContext, emailInput.text.toString())
             if (user == null ||
-                user.getString("password") != LoginUtil.hash(passwordInput.text.toString())) {
+                user.getString("password") != UserUtils.hash(passwordInput.text.toString())) {
                 Toast.makeText(applicationContext, "Überprüfe deine Anmeldedaten!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             startActivity(
-                LoginUtil.loginAndGetIntent(applicationContext, user),
+                UserUtils.loginAndGetIntent(applicationContext, user),
                 ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
             Toast.makeText(applicationContext, "Du wurdest angemeldet", Toast.LENGTH_SHORT).show()
             finish()

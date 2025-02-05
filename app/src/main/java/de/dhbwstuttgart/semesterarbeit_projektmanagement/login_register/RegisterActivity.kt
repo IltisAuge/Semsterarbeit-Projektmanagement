@@ -6,7 +6,6 @@ import android.view.Window
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityRegisterBinding
-import java.util.regex.Pattern
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -36,14 +35,14 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(applicationContext, "Ungültige Email Adresse!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (LoginUtil.getUserbyEmail(applicationContext, email) != null) {
+            if (UserUtils.getUserbyEmail(applicationContext, email) != null) {
                 Toast.makeText(applicationContext, "Es existiert bereits ein Konto mit dieser Email-Adresse!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             val intent = Intent(applicationContext, RegisterNextActivity::class.java)
             intent.putExtra("name", binding.nameInput.text.toString())
             intent.putExtra("email", binding.emailInput.text.toString())
-            intent.putExtra("password", LoginUtil.hash(binding.passwordInput.text.toString()))
+            intent.putExtra("password", UserUtils.hash(binding.passwordInput.text.toString()))
             startActivity(intent)
             finish()
         }

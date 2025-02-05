@@ -1,37 +1,23 @@
 package de.dhbwstuttgart.semesterarbeit_projektmanagement.profile_settings
 
-import android.content.Intent
-import android.graphics.BitmapFactory
-import android.media.Image
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.text.InputType
-import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.ListView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.net.toFile
-import androidx.fragment.app.DialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityProfileSettingsBinding
-import de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.LoginUtil
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.UserUtils
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.BufferedInputStream
 import java.io.File
-import java.net.URLConnection
 
 class ProfileSettingsActivity : AppCompatActivity() {
 
@@ -63,7 +49,9 @@ class ProfileSettingsActivity : AppCompatActivity() {
         profileImg = binding.profilePicture
         setupProfilePictureBtn()
         setupDeleteProfilePictureBtn()
-        loadProfilePicture()
+
+        val bitmap = UserUtils.getProfilePictureBitmap(applicationContext, resources)
+        profileImg.setImageBitmap(bitmap)
 
         tagsListView = findViewById(R.id.tags_list)
         addTagBtn = findViewById(R.id.TagAdd)
@@ -125,23 +113,6 @@ class ProfileSettingsActivity : AppCompatActivity() {
             confirmDialog.show()
         }
     }
-
-    fun loadProfilePicture() {// Load existing profile picture if available
-        val imgFile = File(applicationContext.filesDir, "profile-picture")
-        if (imgFile.exists()) {
-            val uri = Uri.fromFile(imgFile)
-            uri.let { applicationContext.contentResolver.openInputStream(it) }.use {
-                val bufferedIs = BufferedInputStream(it)
-                val bitmap = BitmapFactory.decodeStream(bufferedIs)
-                profileImg.setImageBitmap(bitmap)
-                bufferedIs.close()
-                it?.close()
-            }
-        } else {
-            profileImg.setImageResource(R.mipmap.blank_pp)
-        }
-    }
-
     fun openAvailableTagsDialog() {
         var availableTags = filterAvailableTags()
         println("Available: $availableTags")
@@ -191,7 +162,7 @@ class ProfileSettingsActivity : AppCompatActivity() {
     fun loadSavedTags() : ArrayList<String> {
         val list = ArrayList<String>()
         val tagsFile = getTagsFile()
-        val uuid = LoginUtil.getLocalUserUUID(applicationContext)
+        val uuid = UserUtils.getLocalUserUUID(applicationContext)
         if (uuid == null) {
             return list
         }
@@ -208,7 +179,7 @@ class ProfileSettingsActivity : AppCompatActivity() {
 
     fun saveTag(tag: String) {
         val tagsFile = getTagsFile()
-        val uuid = LoginUtil.getLocalUserUUID(applicationContext)
+        val uuid = UserUtils.getLocalUserUUID(applicationContext)
         if (uuid == null) {
             return
         }
@@ -226,7 +197,7 @@ class ProfileSettingsActivity : AppCompatActivity() {
 
     fun deleteSavedTag(tag: String) {
         val tagsFile = getTagsFile()
-        val uuid = LoginUtil.getLocalUserUUID(applicationContext)
+        val uuid = UserUtils.getLocalUserUUID(applicationContext)
         if (uuid == null) {
             return
         }

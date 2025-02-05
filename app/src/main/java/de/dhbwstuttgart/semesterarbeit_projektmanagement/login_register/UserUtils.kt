@@ -2,13 +2,19 @@ package de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import org.json.JSONObject
+import java.io.BufferedInputStream
 import java.io.File
 import java.security.MessageDigest
 import java.util.UUID
 
-object LoginUtil {
+object UserUtils {
 
     fun getUserbyEmail(applicationContext: Context, email: String): JSONObject? {
         return getUserbyField(applicationContext, "email", email)
@@ -43,6 +49,21 @@ object LoginUtil {
             return null
         }
         return localUser.getString("uuid")
+    }
+
+    fun getProfilePictureBitmap(applicationContext: Context, resources: Resources) : Bitmap {
+        val imgFile = File(applicationContext.filesDir, "profile-picture")
+        if (imgFile.exists()) {
+            val uri = Uri.fromFile(imgFile)
+            uri.let { applicationContext.contentResolver.openInputStream(it) }.use {
+                val bufferedIs = BufferedInputStream(it)
+                val bitmap = BitmapFactory.decodeStream(bufferedIs)
+                bufferedIs.close()
+                it?.close()
+                return bitmap
+            }
+        }
+        return BitmapFactory.decodeResource(resources, R.mipmap.blank_pp)
     }
 
     fun loginAndGetIntent(applicationContext: Context, user: JSONObject) : Intent {

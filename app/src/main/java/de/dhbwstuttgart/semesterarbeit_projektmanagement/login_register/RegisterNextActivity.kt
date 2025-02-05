@@ -82,10 +82,10 @@ class RegisterNextActivity : AppCompatActivity() {
             val fakultaet = fakultaet_selection.selectedItem.toString()
             val studiengang = studiengang_selection.selectedItem.toString()
             val jahrgang = jahrgang_selection.selectedItem.toString()
-            val user = LoginUtil.getUserObj(UUID.randomUUID(), name, email, password, fakultaet, studiengang, jahrgang)
+            val user = UserUtils.getUserObj(UUID.randomUUID(), name, email, password, fakultaet, studiengang, jahrgang)
             createAccount(user)
             startActivity(
-                LoginUtil.loginAndGetIntent(applicationContext, user),
+                UserUtils.loginAndGetIntent(applicationContext, user),
                 ActivityOptions.makeSceneTransitionAnimation(this).toBundle())
             Toast.makeText(applicationContext, "Dein Konto wurde erstellte", Toast.LENGTH_SHORT).show()
             finish()
