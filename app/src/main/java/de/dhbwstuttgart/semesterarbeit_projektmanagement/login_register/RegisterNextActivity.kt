@@ -102,8 +102,6 @@ class RegisterNextActivity : AppCompatActivity() {
         FileUtil.writeJSON("local-user.json", jsonObj, applicationContext)
 
         // Add user to users.json
-        val users = FileUtil.readJSON("users.json", applicationContext)
-        users.put(user.getString("uuid"), user)
-        FileUtil.writeJSON("users.json", users, applicationContext)
+        UserUtils.saveUser(applicationContext, user)
     }
 }

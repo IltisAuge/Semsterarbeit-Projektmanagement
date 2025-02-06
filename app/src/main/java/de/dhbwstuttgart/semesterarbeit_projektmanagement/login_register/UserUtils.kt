@@ -35,6 +35,12 @@ object UserUtils {
         return null
     }
 
+    fun saveUser(applicationContext: Context, user: JSONObject) {
+        val users = FileUtil.readJSON("users.json", applicationContext)
+        users.put(user.getString("uuid"), user)
+        FileUtil.writeJSON("users.json", users, applicationContext)
+    }
+
     fun getLocalUserUUID(applicationContext: Context) : String? {
         val file = File(applicationContext.filesDir, "local-user.json")
         if (!file.exists()) {
@@ -51,8 +57,8 @@ object UserUtils {
         return localUser.getString("uuid")
     }
 
-    fun getProfilePictureBitmap(applicationContext: Context, resources: Resources) : Bitmap {
-        val imgFile = File(applicationContext.filesDir, "profile-picture")
+    fun getProfilePictureBitmap(applicationContext: Context, resources: Resources, uuid: String) : Bitmap {
+        val imgFile = File(applicationContext.filesDir, "pp-$uuid")
         if (imgFile.exists()) {
             val uri = Uri.fromFile(imgFile)
             uri.let { applicationContext.contentResolver.openInputStream(it) }.use {

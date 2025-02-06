@@ -26,7 +26,8 @@
             android:exported="false" />
         <activity
             android:name=".profile_settings.ProfileSettingsActivity"
-            android:exported="false">
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan|stateHidden">
         </activity>
         <activity
             android:name=".login_register.MainActivity"

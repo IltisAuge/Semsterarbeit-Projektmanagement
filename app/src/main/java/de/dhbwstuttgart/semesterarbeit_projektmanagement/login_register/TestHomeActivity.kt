@@ -33,7 +33,8 @@ class TestHomeActivity : ComponentActivity() {
         headline.setTitle("Willkommen ${intent.getStringExtra("name")}")
 
         val profileImg = binding.profilePicture
-        val bitmap = UserUtils.getProfilePictureBitmap(applicationContext, resources)
+        val bitmap = intent.getStringExtra("uuid")
+            ?.let { UserUtils.getProfilePictureBitmap(applicationContext, resources, it) }
         profileImg.setImageBitmap(bitmap)
 
         listView = findViewById(R.id.itemlist)

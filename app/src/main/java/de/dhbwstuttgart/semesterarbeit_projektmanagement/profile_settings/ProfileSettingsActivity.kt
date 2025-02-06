@@ -1,11 +1,22 @@
 package de.dhbwstuttgart.semesterarbeit_projektmanagement.profile_settings
 
+import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.KeyEvent
+import android.view.LayoutInflater
+import android.view.inputmethod.EditorInfo
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -19,16 +30,19 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 
+
 class ProfileSettingsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileSettingsBinding
-    private lateinit var tagsListView: ListView
+    private lateinit var tagsListView: LinearLayout
     private lateinit var addTagBtn: FloatingActionButton
     private lateinit var activeTagsList: ArrayList<String>
-    private lateinit var tagListAdapter: ArrayAdapter<String>
+    //private lateinit var tagListAdapter: ArrayAdapter<String>
     private lateinit var chooseImgBtn: Button
     private lateinit var deleteImgBtn: Button
     private lateinit var profileImg: ImageView
+    private lateinit var emailInput: EditText
+    private lateinit var phoneInput: EditText
 
     private var hobbys: ArrayList<String> = arrayListOf(
         "Acroyoga", "Apnoetauchen", "Badminton", "Baseball", "Basketball", "Bauchtanz", "Bergsteigen", "BMX", "Bodybuilding", "Boxen", "Cheerleading", "Darts",
@@ -41,48 +55,94 @@ class ProfileSettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val uuid = UserUtils.getLocalUserUUID(applicationContext)
+        if (uuid == null) {
+            println("An error occurred! Local users uuid is null!")
+            return
+        }
+        val user = UserUtils.getUserbyUUID(applicationContext, uuid)
+        if (user == null) {
+            println("An error occurred! Local user is null!")
+            return
+        }
         binding = ActivityProfileSettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         chooseImgBtn = binding.chooseProfilePictureBtn
         deleteImgBtn = binding.deleteProfilePictureBtn
         profileImg = binding.profilePicture
-        setupProfilePictureBtn()
-        setupDeleteProfilePictureBtn()
+        setupProfilePictureBtn(uuid)
+        setupDeleteProfilePictureBtn(uuid)
 
-        val bitmap = UserUtils.getProfilePictureBitmap(applicationContext, resources)
+        val bitmap = UserUtils.getProfilePictureBitmap(applicationContext, resources, uuid)
         profileImg.setImageBitmap(bitmap)
 
-        tagsListView = findViewById(R.id.tags_list)
+        emailInput = binding.editTextEmail
+        phoneInput = binding.editTextPhone
+        emailInput.setText(user.getString("email"))
+        if (user.has("phone")) {
+            phoneInput.setText(user.getString("phone"))
+        }
+        addEmailPhoneInputListener(emailInput, user, "email")
+        addEmailPhoneInputListener(phoneInput, user, "phone")
+
+        tagsListView = binding.tagsList
         addTagBtn = findViewById(R.id.TagAdd)
         activeTagsList = loadSavedTags()
 
+        //tagListAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, activeTagsList)
+        //tagsListView.setAda = tagListAdapter
         activeTagsList.add("DHBW Student")
-
-        tagListAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, activeTagsList)
-        tagsListView.adapter = tagListAdapter
+        setupTagsListView()
 
         addTagBtn.setOnClickListener {
             openAvailableTagsDialog()
         }
+    }
 
-        // Long click listener to delete items
-        tagsListView.setOnItemLongClickListener { parent, view, position, id ->
-            val tagToRemove = activeTagsList[position]
-            // Prevent the deletion of the "DHBW Student" tag
-            if (tagToRemove == "DHBW Student") {
-                Toast.makeText(applicationContext, "Du kannst diesen Tag nicht löschen!", Toast.LENGTH_SHORT).show()
-                return@setOnItemLongClickListener true
+    fun setupTagsListView() {
+        println("setup $activeTagsList")
+        tagsListView.removeAllViews()
+        for ((idx, item) in activeTagsList.withIndex()) {
+            // Item layout
+            val itemView = TextView(applicationContext)
+            // Long click listener to delete items
+            itemView.setOnLongClickListener {
+                // Prevent the deletion of the "DHBW Student" tag
+                if (item == "DHBW Student") {
+                    Toast.makeText(applicationContext, "Du kannst diesen Tag nicht löschen!", Toast.LENGTH_SHORT).show()
+                    return@setOnLongClickListener true
+                }
+                openDeleteConfirmationDialog(item)
+                return@setOnLongClickListener true
             }
-            openDeleteConfirmationDialog(tagToRemove, position)
+            itemView.setPadding(30, if (idx == 0) 60 else 0, 20, if (idx == activeTagsList.size-1) 120 else 60)
+            itemView.setTextSize(15f)
+            itemView.setText(item)
+            tagsListView.addView(itemView)
         }
     }
 
-    fun setupProfilePictureBtn() {
+    fun addEmailPhoneInputListener(view: EditText, user: JSONObject, field: String) {
+        view.setOnEditorActionListener { v, actionId, event ->
+            println("actionId=$actionId")
+            if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
+                val s = v.text
+                println("s=$s")
+                // Save changed email data to file
+                user.put(field, s.toString())
+                println("user: $user")
+                UserUtils.saveUser(applicationContext, user)
+                Toast.makeText(applicationContext, "Gespeichert!", Toast.LENGTH_SHORT).show()
+            }
+            true
+        }
+    }
+
+    fun setupProfilePictureBtn(uuid: String) {
         val resultLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             if (uri == null) return@registerForActivityResult
-
-            val file = File(applicationContext.filesDir, "profile-picture")
+            val file = File(applicationContext.filesDir, "pp-$uuid")
             file.createNewFile()
             uri.let { applicationContext.contentResolver.openInputStream(it) }.use { input ->
                 file.outputStream().use { output ->
@@ -90,15 +150,16 @@ class ProfileSettingsActivity : AppCompatActivity() {
                 }
             }
             profileImg.setImageURI(uri)
+            Toast.makeText(applicationContext, "Profilbild wurde geändert", Toast.LENGTH_SHORT).show()
         }
         chooseImgBtn.setOnClickListener {
             resultLauncher.launch("image/*")
         }
     }
 
-    fun setupDeleteProfilePictureBtn() {
+    fun setupDeleteProfilePictureBtn(uuid: String) {
         deleteImgBtn.setOnClickListener {
-            val file = File(applicationContext.filesDir, "profile-picture")
+            val file = File(applicationContext.filesDir, "pp-$uuid")
             if (file.exists()) {
                 file.delete()
             }
@@ -113,6 +174,7 @@ class ProfileSettingsActivity : AppCompatActivity() {
             confirmDialog.show()
         }
     }
+
     fun openAvailableTagsDialog() {
         var availableTags = filterAvailableTags()
         println("Available: $availableTags")
@@ -133,14 +195,14 @@ class ProfileSettingsActivity : AppCompatActivity() {
             confirmDialog.setMessage("Möchtest du den Tag '$tag' hinzufügen?")
             confirmDialog.setPositiveButton("Ja") { dialog, which ->
                 activeTagsList.add(tag)
-                tagListAdapter.notifyDataSetChanged()
+                saveTag(tag)
+                setupTagsListView()
                 if (companies.contains(tag)) {
                     Toast.makeText(applicationContext, "Unternehmens-Tag '$tag' wurde hinzugefügt", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(applicationContext, "Tag '$tag' wurde hinzugefügt", Toast.LENGTH_SHORT).show()
                 }
                 availableTagsDialog.dismiss()
-                saveTag(tag)
             }
             confirmDialog.setNegativeButton("Nein") { dialog, which -> }
             confirmDialog.show()
@@ -195,7 +257,7 @@ class ProfileSettingsActivity : AppCompatActivity() {
         FileUtil.writeJSON("tags.json", fileObj, applicationContext)
     }
 
-    fun deleteSavedTag(tag: String) {
+    fun deleteTag(tag: String) {
         val tagsFile = getTagsFile()
         val uuid = UserUtils.getLocalUserUUID(applicationContext)
         if (uuid == null) {
@@ -205,13 +267,22 @@ class ProfileSettingsActivity : AppCompatActivity() {
         if (!fileObj.has(uuid)) {
             return
         }
-        val activeTags = fileObj.getJSONArray(uuid)
-        for (i in 0 until activeTags.length() - 1) {
-            if (activeTags.get(i) == tag) {
-                activeTags.remove(i)
+        println("Deleting tag $tag...")
+        val listCpy = ArrayList<String>()
+        val newTagsObj = JSONArray()
+        for (i in 0 until activeTagsList.size) {
+            if (activeTagsList[i] == tag) {
+                println("Set tag ${activeTagsList[i]} to space")
+                activeTagsList[i] = ""
+            } else if (activeTagsList[i] != "DHBW Student") {
+                println("Copy tag ${activeTagsList[i]}")
+                listCpy.add(activeTagsList[i])
+                newTagsObj.put(activeTagsList[i])
             }
         }
-        fileObj.put(uuid, activeTags)
+        activeTagsList = listCpy
+        activeTagsList.add("DHBW Student")
+        fileObj.put(uuid, newTagsObj)
         FileUtil.writeJSON("tags.json", fileObj, applicationContext)
     }
 
@@ -229,14 +300,13 @@ class ProfileSettingsActivity : AppCompatActivity() {
         return newList
     }
 
-    fun openDeleteConfirmationDialog(tagToRemove: String, position: Int) : Boolean {
+    fun openDeleteConfirmationDialog(tagToRemove: String) : Boolean {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Tag entfernen")
         builder.setMessage("Willst du den Tag '$tagToRemove' entfernen?")
         builder.setPositiveButton("Ja") { dialog, which ->
-            activeTagsList.removeAt(position)
-            tagListAdapter.notifyDataSetChanged()  // Update the ListView
-            deleteSavedTag(tagToRemove)
+            deleteTag(tagToRemove)
+            setupTagsListView()
             Toast.makeText(applicationContext, "Tag '$tagToRemove' wurde entfernt", Toast.LENGTH_SHORT).show()
         }
         builder.setNegativeButton("Nein") { dialog, which -> }
