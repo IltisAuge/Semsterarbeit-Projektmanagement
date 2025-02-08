@@ -37,7 +37,6 @@ class ProfileSettingsActivity : AppCompatActivity() {
     private lateinit var tagsListView: LinearLayout
     private lateinit var addTagBtn: FloatingActionButton
     private lateinit var activeTagsList: ArrayList<String>
-    //private lateinit var tagListAdapter: ArrayAdapter<String>
     private lateinit var chooseImgBtn: Button
     private lateinit var deleteImgBtn: Button
     private lateinit var profileImg: ImageView
@@ -89,9 +88,6 @@ class ProfileSettingsActivity : AppCompatActivity() {
         tagsListView = binding.tagsList
         addTagBtn = findViewById(R.id.TagAdd)
         activeTagsList = loadSavedTags()
-
-        //tagListAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, activeTagsList)
-        //tagsListView.setAda = tagListAdapter
         activeTagsList.add("DHBW Student")
         setupTagsListView()
 
@@ -101,7 +97,6 @@ class ProfileSettingsActivity : AppCompatActivity() {
     }
 
     fun setupTagsListView() {
-        println("setup $activeTagsList")
         tagsListView.removeAllViews()
         for ((idx, item) in activeTagsList.withIndex()) {
             // Item layout
@@ -125,13 +120,10 @@ class ProfileSettingsActivity : AppCompatActivity() {
 
     fun addEmailPhoneInputListener(view: EditText, user: JSONObject, field: String) {
         view.setOnEditorActionListener { v, actionId, event ->
-            println("actionId=$actionId")
             if (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT) {
                 val s = v.text
-                println("s=$s")
                 // Save changed email data to file
                 user.put(field, s.toString())
-                println("user: $user")
                 UserUtils.saveUser(applicationContext, user)
                 Toast.makeText(applicationContext, "Gespeichert!", Toast.LENGTH_SHORT).show()
             }
@@ -177,8 +169,6 @@ class ProfileSettingsActivity : AppCompatActivity() {
 
     fun openAvailableTagsDialog() {
         var availableTags = filterAvailableTags()
-        println("Available: $availableTags")
-
         val availableTagsDialogBuilder = AlertDialog.Builder(this)
         val availableTagsView = ListView(this)
         val availableTagsAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, availableTags)
@@ -267,15 +257,12 @@ class ProfileSettingsActivity : AppCompatActivity() {
         if (!fileObj.has(uuid)) {
             return
         }
-        println("Deleting tag $tag...")
         val listCpy = ArrayList<String>()
         val newTagsObj = JSONArray()
         for (i in 0 until activeTagsList.size) {
             if (activeTagsList[i] == tag) {
-                println("Set tag ${activeTagsList[i]} to space")
                 activeTagsList[i] = ""
             } else if (activeTagsList[i] != "DHBW Student") {
-                println("Copy tag ${activeTagsList[i]}")
                 listCpy.add(activeTagsList[i])
                 newTagsObj.put(activeTagsList[i])
             }
