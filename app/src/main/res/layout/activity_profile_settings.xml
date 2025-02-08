@@ -4,14 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content">
 
         <ScrollView
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:orientation="vertical"
-            android:fillViewport="true">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            android:orientation="vertical">
 
             <androidx.coordinatorlayout.widget.CoordinatorLayout
                 android:layout_width="match_parent"
@@ -27,11 +27,11 @@
                     <com.google.android.material.appbar.MaterialToolbar
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_margin="5dp"
                         android:background="@android:color/transparent"
                         android:minHeight="?attr/actionBarSize"
                         android:theme="?attr/actionBarTheme"
-                        android:layout_margin="5dp"
-                        app:title="Profil Einstellungen"/>
+                        app:title="Profil Einstellungen" />
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -44,10 +44,10 @@
                             android:maxWidth="200dp"
                             android:maxHeight="200dp"
                             app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintDimensionRatio="H,1:1"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintHorizontal_bias="0.5"
                             app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintDimensionRatio="H,1:1"
                             tools:srcCompat="@mipmap/blank_pp" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -55,9 +55,9 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginTop="10dp"
                         android:gravity="center"
-                        android:layout_marginTop="10dp">
+                        android:orientation="horizontal">
 
                         <Button
                             android:id="@+id/choose_profile_picture_btn"
@@ -81,11 +81,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Telefonnummer"
-                        android:textColor="@color/black"
                         android:layout_marginStart="10dp"
                         android:layout_marginTop="30dp"
-                        android:textStyle="bold"/>
+                        android:text="Telefonnummer"
+                        android:textColor="@color/black"
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/editTextPhone"
@@ -97,11 +97,11 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="DHBW Email Adresse"
-                        android:textColor="@color/black"
                         android:layout_marginStart="10dp"
                         android:layout_marginTop="30dp"
-                        android:textStyle="bold"/>
+                        android:text="DHBW Email Adresse"
+                        android:textColor="@color/black"
+                        android:textStyle="bold" />
 
                     <EditText
                         android:id="@+id/editTextEmail"
@@ -113,17 +113,17 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Profil-Tags hinzufügen und löschen"
-                        android:textColor="@color/black"
                         android:layout_marginStart="10dp"
                         android:layout_marginTop="30dp"
-                        android:textStyle="bold"/>
+                        android:text="Profil-Tags hinzufügen und löschen"
+                        android:textColor="@color/black"
+                        android:textStyle="bold" />
 
                     <LinearLayout
                         android:id="@+id/tags_list"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"/>
+                        android:layout_height="fill_parent"
+                        android:orientation="vertical" />
                 </LinearLayout>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -131,8 +131,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="right|bottom"
-                    android:layout_marginBottom="16dp"
                     android:layout_marginRight="16dp"
+                    android:layout_marginBottom="16dp"
                     android:clickable="true"
                     app:srcCompat="@android:drawable/ic_input_add" />
 

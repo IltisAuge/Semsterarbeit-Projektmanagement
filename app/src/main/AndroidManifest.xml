@@ -13,28 +13,19 @@
         android:theme="@style/Base.Theme.Semesterarbeit_Projektmanagement"
         tools:targetApi="35">
         <activity
-            android:name=".login_register.TestHomeActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:label="@string/app_name">
-            android:name=".login_register.RegisterNextActivity"
-            android:exported="false" />
-        <activity
             android:name=".login_register.RegisterActivity"
             android:exported="false" />
         <activity
             android:name=".login_register.LoginActivity"
             android:exported="false" />
         <activity
-            android:name=".profile_settings.ProfileSettingsActivity"
+            android:name=".NavigationMainActivity"
             android:exported="false"
-            android:windowSoftInputMode="adjustPan|stateHidden">
-        </activity>
+            android:windowSoftInputMode="adjustPan|stateHidden"/>
         <activity
             android:name=".login_register.MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -42,5 +33,4 @@
             </intent-filter>
         </activity>
     </application>
-
 </manifest>

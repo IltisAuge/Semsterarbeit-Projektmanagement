@@ -4,7 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityMainBinding
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityNavigationMainBinding
 import org.json.JSONObject
 import java.io.File
 
@@ -14,10 +21,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         with(window) {
             requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS)
             exitTransition = android.transition.Slide()
         }
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         // Create file to store all users
         // This file should be migrated to a database in a real-world application
         println("Start Main")

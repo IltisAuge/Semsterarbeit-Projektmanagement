@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.NavigationMainActivity
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import org.json.JSONObject
 import java.io.BufferedInputStream
@@ -73,7 +74,7 @@ object UserUtils {
     }
 
     fun loginAndGetIntent(applicationContext: Context, user: JSONObject) : Intent {
-        val intent = Intent(applicationContext, TestHomeActivity::class.java)
+        val intent = Intent(applicationContext, NavigationMainActivity::class.java)
         // Add all user data to the intent for passing to the next activity
         for (key in user.keys()) {
             intent.putExtra(key, user.getString(key))

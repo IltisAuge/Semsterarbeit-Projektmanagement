@@ -92,9 +92,6 @@ class RegisterNextActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-    }
-
     fun createAccount(user: JSONObject) {
         println("Creating account $user")
         val jsonObj = JSONObject()
