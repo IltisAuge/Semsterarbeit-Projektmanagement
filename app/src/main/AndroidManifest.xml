@@ -19,9 +19,13 @@
             android:name=".login_register.LoginActivity"
             android:exported="false" />
         <activity
+            android:name=".login_register.RegisterNextActivity"
+            android:exported="false" />
+        <activity
             android:name=".NavigationMainActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan|stateHidden"/>
+
         <activity
             android:name=".login_register.MainActivity"
             android:exported="true"

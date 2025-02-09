@@ -18,5 +18,9 @@
         android:label="@string/title_profile_settings"
         tools:layout="@layout/activity_profile_settings" >
     </fragment>
+    <fragment
+        android:id="@+id/navigation_swipe_activity"
+        android:name="de.dhbwstuttgart.semesterarbeit_projektmanagement.SwipeActivity"
+        android:label="SwipeActivity" />
 
 </navigation>

@@ -112,4 +112,17 @@ object UserUtils {
         user.put("jahrgang", jahrgang)
         return user
     }
+
+    fun getAllUserUUIDs(applicationContext: Context): List<String> {
+        val users = FileUtil.readJSON("users.json", applicationContext)
+        val uuidList = mutableListOf<String>()
+        for (key in users.keys()) {
+            uuidList.add(key)
+        }
+        return uuidList
+    }
+    fun getAllUserUUIDsExceptLocal(applicationContext: Context): List<String> {
+        val localUUID = getLocalUserUUID(applicationContext)
+        return getAllUserUUIDs(applicationContext).filter { it != localUUID }
+    }
 }

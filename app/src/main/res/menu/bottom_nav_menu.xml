@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/navigation_swipe_activity"
+        android:icon="@drawable/ic_notifications_black_24dp"
+        android:title="@string/title_swipe_activity" />
+
+    <item
         android:id="@+id/navigation_test_home"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/title_home" />
@@ -10,5 +15,6 @@
         android:id="@+id/navigation_profile_settings"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/title_profile_settings" />
+
 
 </menu>
