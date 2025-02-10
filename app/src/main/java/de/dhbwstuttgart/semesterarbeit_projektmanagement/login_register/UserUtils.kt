@@ -6,16 +6,77 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.NavigationMainActivity
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
+import kotlinx.coroutines.delay
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.File
+import java.net.URL
 import java.security.MessageDigest
 import java.util.UUID
+import kotlin.random.Random
+
 
 object UserUtils {
+
+    val random = Random
+
+    fun createRandomUsers(applicationContext: Context) {
+        val randomNames = mutableListOf<String>()
+        applicationContext.resources.assets.open("random-names.txt").bufferedReader().use {
+            randomNames.addAll(it.readText().split("\n"))
+        }
+        val fakultaetJson = applicationContext.resources.assets.open("fakultaet-mapping.json").bufferedReader().use { it.readText() }
+        val fakultaetJsonObj = JSONObject(fakultaetJson)
+        val fakultaet_list = ArrayList<String>()
+        for (key in fakultaetJsonObj.keys()) {
+            fakultaet_list.add(key)
+        }
+        val mapping = HashMap<String, ArrayList<String>>()
+        for (fakultaet in fakultaet_list) {
+            val studiengaenge = fakultaetJsonObj.getJSONArray(fakultaet)
+            val list = ArrayList<String>()
+            for (i in 0 until studiengaenge.length()) {
+                list.add(studiengaenge.getString(i))
+            }
+            mapping.put(fakultaet, list)
+        }
+
+        Thread {
+            for (i in 0 until 10) {
+                var name = randomNames[i]
+                name = name.substring(0, name.length - 1)
+                val email = "$name@lehre.dhbw-stuttgart.de"
+                var rndmIdx = random.nextInt(fakultaet_list.size)
+                val fakultaet = fakultaet_list[rndmIdx]
+                if (!mapping.containsKey(fakultaet)) {
+                    continue
+                }
+                rndmIdx = mapping.get(fakultaet)?.size?.let { random.nextInt(it) }!!
+                val studiengang = mapping.get(fakultaet)!!.get(rndmIdx)
+                val jahrgang = random.nextInt(8) + 2018 // 2018 - 2025
+                val uuid = UUID.randomUUID()
+                val user = getUserObj(uuid, name, email, hash("pw"), fakultaet, studiengang, jahrgang)
+                saveUser(applicationContext, user)
+                val imgURL = "https://thispersondoesnotexist.com/"
+                val file = File(applicationContext.filesDir, "pp-$uuid")
+                file.createNewFile()
+                try {
+                    val input = URL(imgURL).openStream()
+                    file.outputStream().use { output ->
+                        input?.copyTo(output)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                Thread.sleep(100)
+            }
+        }.start()
+    }
 
     fun getUserbyEmail(applicationContext: Context, email: String): JSONObject? {
         return getUserbyField(applicationContext, "email", email)
@@ -40,22 +101,23 @@ object UserUtils {
         val users = FileUtil.readJSON("users.json", applicationContext)
         users.put(user.getString("uuid"), user)
         FileUtil.writeJSON("users.json", users, applicationContext)
+        println("Create user $user")
     }
 
     fun getLocalUserUUID(applicationContext: Context) : String? {
-        val file = File(applicationContext.filesDir, "local-user.json")
-        if (!file.exists()) {
-            file.createNewFile()
-            file.writeText(
-                "{ 'uuid': '083509e0-83f8-49da-acb7-e5850f039d3e' }"
-            )
-        }
-        // TODO: Remove the code above after integration with login activity
         val localUser = FileUtil.readJSON("local-user.json", applicationContext)
         if (!localUser.has("uuid") || localUser.get("uuid") == "") {
             return null
         }
         return localUser.getString("uuid")
+    }
+
+    fun getUserTags(applicationContext: Context, uuid: String) : JSONArray {
+        val fileObj = FileUtil.readJSON("tags.json", applicationContext)
+        if (!fileObj.has(uuid)) {
+            return JSONArray()
+        }
+        return fileObj.getJSONArray(uuid)
     }
 
     fun getProfilePictureBitmap(applicationContext: Context, resources: Resources, uuid: String) : Bitmap {
@@ -100,7 +162,7 @@ object UserUtils {
         password: String,
         fakultaet: String,
         studiengang: String,
-        jahrgang: String
+        jahrgang: Int
     ): JSONObject {
         val user = JSONObject()
         user.put("uuid", uuid.toString())
@@ -113,7 +175,23 @@ object UserUtils {
         return user
     }
 
-    fun getAllUserUUIDs(applicationContext: Context): List<String> {
+    fun getAllUsers(applicationContext: Context, includeLocalUser: Boolean): List<JSONObject> {
+        val users = FileUtil.readJSON("users.json", applicationContext)
+        val userList = mutableListOf<JSONObject>()
+        val localUUID = getLocalUserUUID(applicationContext)
+        println("users: $users")
+        for (key in users.keys()) {
+            val user = users.get(key) as JSONObject
+            println("key: $key user: $user")
+            if (user.getString("uuid").equals(localUUID) && !includeLocalUser) {
+                continue
+            }
+            userList.add(user)
+        }
+        return userList
+    }
+
+    /*fun getAllUserUUIDs(applicationContext: Context): List<String> {
         val users = FileUtil.readJSON("users.json", applicationContext)
         val uuidList = mutableListOf<String>()
         for (key in users.keys()) {
@@ -121,8 +199,9 @@ object UserUtils {
         }
         return uuidList
     }
+
     fun getAllUserUUIDsExceptLocal(applicationContext: Context): List<String> {
         val localUUID = getLocalUserUUID(applicationContext)
         return getAllUserUUIDs(applicationContext).filter { it != localUUID }
-    }
+    }*/
 }

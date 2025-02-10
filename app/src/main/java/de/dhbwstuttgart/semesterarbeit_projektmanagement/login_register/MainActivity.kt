@@ -9,6 +9,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityMainBinding
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityNavigationMainBinding
@@ -35,14 +36,23 @@ class MainActivity : AppCompatActivity() {
         println("Start Main")
         val usersFile = File(applicationContext.filesDir, "users.json")
         println("users exists? ${usersFile.exists()}")
+        usersFile.delete()
         if (!usersFile.exists()) {
             usersFile.createNewFile()
-            usersFile.writeText("{ 'users': { } }")
+            usersFile.writeText("{ }")
             println("Created users.json")
+            UserUtils.createRandomUsers(applicationContext)
         }
+
+        // Fix users.json
+        // TODO: Remove in production
+        val usersObj = FileUtil.readJSON("users.json", applicationContext)
+        usersObj.remove("users")
+        FileUtil.writeJSON("users.json", usersObj, applicationContext)
 
         // Check if local-user.json file exists and contains "uuid"
         val file = File(applicationContext.filesDir, "local-user.json")
+        file.delete()
         if (file.exists()) {
             val jsonObj = JSONObject(file.readText())
             println(jsonObj)

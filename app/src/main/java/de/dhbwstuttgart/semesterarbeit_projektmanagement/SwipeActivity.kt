@@ -1,19 +1,17 @@
 package de.dhbwstuttgart.semesterarbeit_projektmanagement
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.ListView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.google.android.material.appbar.MaterialToolbar
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivitySwipeBinding
-import de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.LoginActivity
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.UserUtils
-import de.dhbwstuttgart.semesterarbeit_projektmanagement.profile_settings.ProfileSettingsActivity
 import org.json.JSONObject
 import kotlin.random.Random
 
@@ -25,9 +23,12 @@ class SwipeActivity : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
     //private lateinit var binding: ActivityTestHomeBinding
-    private lateinit var list: ArrayList<String>
+    private lateinit var list: MutableList<String>
     private lateinit var listView: ListView
     private lateinit var listAdapter: ArrayAdapter<String>
+    private lateinit var headline: MaterialToolbar
+    private lateinit var profileImg: ImageView
+    private var prevIdx = 0
 
     /*override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return keyCode != KeyEvent.KEYCODE_BACK
@@ -39,74 +40,73 @@ class SwipeActivity : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = ActivitySwipeBinding.inflate(inflater, container, false)
-        val uuid = UserUtils.getLocalUserUUID(requireContext())
-        if (uuid == null) {
-            return binding.root
-        }
-        val user = UserUtils.getUserbyUUID(requireContext(), uuid)
-        if (user == null) {
-            return binding.root
-        }
 
-        val headline = binding.homeHeadline
-        headline.setTitle(user.getString("name"))
-
-        val profileImg = binding.profilePicture
-        val bitmap = user.getString("uuid")
-            ?.let { UserUtils.getProfilePictureBitmap(requireContext(), resources, it) }
-        profileImg.setImageBitmap(bitmap)
-
+        list = mutableListOf()
         listView = binding.itemlist
-        list = ArrayList()
-        list.add("Email: ${user.getString("email")}")
-        list.add("Fakultät: ${user.getString("fakultaet")}")
-        list.add("Studiengang: ${user.getString("studiengang")}")
-        list.add("Jahrgang: ${user.getString("jahrgang")}")
-        //list.add("Tags: ${user.getString("tags")}")
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, list)
         listView.adapter = listAdapter
+        headline = binding.homeHeadline
+        profileImg = binding.profilePicture
 
-        var prevUUID = ""
+        var prevUUID = selectNewUser(null)
+
         val settingsButton = binding.nextUserButton
         settingsButton.setOnClickListener {
-            val users = UserUtils.getAllUserUUIDsExceptLocal(requireContext())
-            for (uID in users){
-                UserUtils.getUserbyUUID(requireContext(), uID)
-                    ?.let { it1 ->println((it1.getString("name"))) }
-            }
-            var randomIndex: Int
-            var randomUUID: String
-            do {
-                randomIndex = Random.nextInt(users.size-1)
-                randomUUID = users[randomIndex+1]
-            } while (randomUUID == prevUUID)
-
-            println("Test " + randomUUID)
-            println("Prev:" + prevUUID)
-
-            list.clear()
-            val user = UserUtils.getUserbyUUID(requireContext(), randomUUID)
-
-            if (user != null)  {
-                val headline = binding.homeHeadline
-                headline.setTitle(user.getString("name"))
-                val profileImg = binding.profilePicture
-                val bitmap = user.getString("uuid")
-                    ?.let { UserUtils.getProfilePictureBitmap(requireContext(), resources, it) }
-                profileImg.setImageBitmap(bitmap)
-                listView = binding.itemlist
-                list = ArrayList()
-                list.add("Email: ${user.getString("email")}")
-                list.add("Fakultät: ${user.getString("fakultaet")}")
-                list.add("Studiengang: ${user.getString("studiengang")}")
-                list.add("Jahrgang: ${user.getString("jahrgang")}")
-                listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, list)
-                listView.adapter = listAdapter
-                prevUUID = randomUUID
-            }
-
+            prevUUID = selectNewUser(prevUUID)
         }
         return binding.root
+    }
+
+    fun selectNewUser(prevUUID: String?) : String? {
+        val users = UserUtils.getAllUsers(requireContext(), false)
+        for (user in users) {
+            // Debug
+            println(user.getString("name"))
+        }
+        //var randomIndex: Int = 0
+        var randomUser: JSONObject? = null
+        do {
+            if (prevIdx > users.size-1) {
+                prevIdx = 0
+            }
+            println("randomIndex: $prevIdx")
+            randomUser = users[prevIdx]
+            prevIdx++//Random.nextInt(users.size-1)
+        } while (prevUUID != null && randomUser != null && randomUser.get("uuid") == prevUUID)
+        if (randomUser == null) {
+            println("No user found!")
+            return null
+        }
+
+        println("Test " + randomUser.get("uuid"))
+        println("Prev:" + prevUUID)
+
+        headline.setTitle(randomUser.getString("name"))
+        val bitmap = randomUser.getString("uuid")
+            ?.let { UserUtils.getProfilePictureBitmap(requireContext(), resources, it) }
+        profileImg.setImageBitmap(bitmap)
+        list.clear()
+        list.addAll(getUserInformation(randomUser))
+        listAdapter.notifyDataSetChanged()
+        return randomUser.getString("uuid")
+    }
+
+    fun getUserInformation(randomUser: JSONObject) : MutableList<String> {
+        list = mutableListOf<String>()
+        list.add("Email: ${randomUser.getString("email")}")
+        list.add("Fakultät: ${randomUser.getString("fakultaet")}")
+        list.add("Studiengang: ${randomUser.getString("studiengang")}")
+        list.add("Jahrgang: ${randomUser.getString("jahrgang")}")
+        val tagsString = StringBuilder()
+        val userTags = UserUtils.getUserTags(requireContext(), randomUser.getString("uuid"))
+        for (i in 0 until userTags.length()) {
+            tagsString.append(userTags[i])
+            if (i != userTags.length() - 1) {
+                tagsString.append(", ")
+            }
+        }
+        list.add("Interessen: $tagsString")
+        return list
     }
 
     override fun onDestroyView() {

@@ -81,7 +81,7 @@ class RegisterNextActivity : AppCompatActivity() {
             }
             val fakultaet = fakultaet_selection.selectedItem.toString()
             val studiengang = studiengang_selection.selectedItem.toString()
-            val jahrgang = jahrgang_selection.selectedItem.toString()
+            val jahrgang = jahrgang_selection.selectedItem.toString().toInt()
             val user = UserUtils.getUserObj(UUID.randomUUID(), name, email, password, fakultaet, studiengang, jahrgang)
             createAccount(user)
             startActivity(
