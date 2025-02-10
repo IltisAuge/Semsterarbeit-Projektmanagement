@@ -62,7 +62,7 @@ class SwipeActivity : Fragment() {
         list.add("Fakultät: ${user.getString("fakultaet")}")
         list.add("Studiengang: ${user.getString("studiengang")}")
         list.add("Jahrgang: ${user.getString("jahrgang")}")
-        list.add("Tags: ${user.getString("tags")}")
+        //list.add("Tags: ${user.getString("tags")}")
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, list)
         listView.adapter = listAdapter
 

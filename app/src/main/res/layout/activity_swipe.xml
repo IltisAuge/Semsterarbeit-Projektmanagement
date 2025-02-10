@@ -59,18 +59,18 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
+                <Button
+                    android:id="@+id/nextUser_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Next User" />
+
                 <ListView
                     android:id="@+id/itemlist"
                     android:layout_width="match_parent"
                     android:layout_height="283dp">
 
                 </ListView>
-
-                <Button
-                    android:id="@+id/nextUser_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Next User" />
 
             </LinearLayout>
 
