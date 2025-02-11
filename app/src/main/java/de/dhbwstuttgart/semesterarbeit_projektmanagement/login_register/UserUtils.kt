@@ -6,11 +6,10 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.NavigationMainActivity
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
-import kotlinx.coroutines.delay
+import de.dhbwstuttgart.semesterarbeit_projektmanagement.profile_settings.ProfileSettingsActivity
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedInputStream
@@ -24,6 +23,23 @@ import kotlin.random.Random
 object UserUtils {
 
     val random = Random
+
+    // returns Pair<hobbys, companies>
+    fun getAvailableTags(applicationContext: Context) : Pair<List<String>, List<String>> {
+        val json = applicationContext.resources.assets.open("available_tags.json").bufferedReader().use { it.readText() }
+        val tagsFileObj = JSONObject(json)
+        val hobbysObj = tagsFileObj.getJSONArray("hobbys")
+        val companiesObj = tagsFileObj.getJSONArray("companies")
+        val hobbys = mutableListOf<String>()
+        val companies = mutableListOf<String>()
+        for (i in 0 until hobbysObj.length()) {
+            hobbys.add(hobbysObj.getString(i))
+        }
+        for (i in 0 until companiesObj.length()) {
+            companies.add(companiesObj.getString(i))
+        }
+        return Pair(hobbys, companies)
+    }
 
     fun createRandomUsers(applicationContext: Context) {
         val randomNames = mutableListOf<String>()
@@ -45,7 +61,10 @@ object UserUtils {
             }
             mapping.put(fakultaet, list)
         }
-
+        val availableTags = getAvailableTags(applicationContext)
+        val allTags = availableTags.first + availableTags.second
+        val json = applicationContext.resources.assets.open("available_tags.json").bufferedReader().use { it.readText() }
+        val tagsFileObj = JSONObject(json)
         Thread {
             for (i in 0 until 10) {
                 var name = randomNames[i]
@@ -61,7 +80,30 @@ object UserUtils {
                 val jahrgang = random.nextInt(8) + 2018 // 2018 - 2025
                 val uuid = UUID.randomUUID()
                 val user = getUserObj(uuid, name, email, hash("pw"), fakultaet, studiengang, jahrgang)
+                user.put("phone", random.nextInt(10000000)+10000000)
                 saveUser(applicationContext, user)
+                // Set random tags
+                val activeTags: JSONArray
+                if (tagsFileObj.has(uuid.toString())) {
+                    activeTags = tagsFileObj.getJSONArray(uuid.toString())
+                } else {
+                    activeTags = JSONArray()
+                }
+                val selectedTags = mutableListOf<String>()
+                for (i in 0 until activeTags.length()) {
+                    selectedTags.add(activeTags.getString(i))
+                }
+                val rndTagsCount = random.nextInt(allTags.size)
+                for (i in 0 until rndTagsCount) {
+                    var currentTag: String
+                    do {
+                        currentTag =  allTags[random.nextInt(allTags.size)]
+                    } while (selectedTags.contains(currentTag))
+                    selectedTags.add(currentTag)
+                    activeTags.put(currentTag)
+                }
+                tagsFileObj.put(uuid.toString(), activeTags)
+                // Set random profile picture
                 val imgURL = "https://thispersondoesnotexist.com/"
                 val file = File(applicationContext.filesDir, "pp-$uuid")
                 file.createNewFile()
@@ -71,10 +113,11 @@ object UserUtils {
                         input?.copyTo(output)
                     }
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    println("Could not load image from URL!")
                 }
                 Thread.sleep(100)
             }
+            FileUtil.writeJSON("tags.json", tagsFileObj, applicationContext)
         }.start()
     }
 
@@ -113,11 +156,11 @@ object UserUtils {
     }
 
     fun getUserTags(applicationContext: Context, uuid: String) : JSONArray {
-        val fileObj = FileUtil.readJSON("tags.json", applicationContext)
-        if (!fileObj.has(uuid)) {
+        val tagsFileObj = FileUtil.readJSON("tags.json", applicationContext)
+        if (!tagsFileObj.has(uuid)) {
             return JSONArray()
         }
-        return fileObj.getJSONArray(uuid)
+        return tagsFileObj.getJSONArray(uuid)
     }
 
     fun getProfilePictureBitmap(applicationContext: Context, resources: Resources, uuid: String) : Bitmap {
@@ -129,7 +172,9 @@ object UserUtils {
                 val bitmap = BitmapFactory.decodeStream(bufferedIs)
                 bufferedIs.close()
                 it?.close()
-                return bitmap
+                if (bitmap != null) {
+                    return bitmap
+                }
             }
         }
         return BitmapFactory.decodeResource(resources, R.mipmap.blank_pp)

@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
         println("Start Main")
         val usersFile = File(applicationContext.filesDir, "users.json")
         println("users exists? ${usersFile.exists()}")
-        usersFile.delete()
+        usersFile.delete() // TODO: Remove
         if (!usersFile.exists()) {
             usersFile.createNewFile()
             usersFile.writeText("{ }")
@@ -49,10 +49,11 @@ class MainActivity : AppCompatActivity() {
         val usersObj = FileUtil.readJSON("users.json", applicationContext)
         usersObj.remove("users")
         FileUtil.writeJSON("users.json", usersObj, applicationContext)
+        File(applicationContext.filesDir, "tags.json").delete()
 
         // Check if local-user.json file exists and contains "uuid"
         val file = File(applicationContext.filesDir, "local-user.json")
-        file.delete()
+        file.delete() // TODO: Remove
         if (file.exists()) {
             val jsonObj = JSONObject(file.readText())
             println(jsonObj)

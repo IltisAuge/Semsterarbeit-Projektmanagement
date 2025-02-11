@@ -58,35 +58,35 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <ListView
-                    android:id="@+id/itemlist"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="283dp" />
+                    android:layout_height="446dp"
+                    android:orientation="vertical">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_gravity="center">
+                    <ListView
+                        android:id="@+id/itemlist"
+                        android:layout_width="match_parent"
+                        android:layout_height="400dp" />
 
-                    <Button
-                        android:id="@+id/settings_button"
-                        style="@style/blue_btn"
-                        android:layout_width="wrap_content"
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/button_container"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        app:layout_constraintLeft_toLeftOf="parent"
-                        android:text="Einstellungen" />
+                        android:layout_gravity="center"
+                        android:orientation="horizontal">
 
-                    <Button
-                        android:id="@+id/logout_button"
-                        style="@style/red_btn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="10dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:text="Ausloggen" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                        <Button
+                            android:id="@+id/logout_button"
+                            style="@style/red_btn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="10dp"
+                            android:text="Ausloggen"
+                            app:layout_constraintEnd_toEndOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+
             </LinearLayout>
         </androidx.coordinatorlayout.widget.CoordinatorLayout>
     </ScrollView>

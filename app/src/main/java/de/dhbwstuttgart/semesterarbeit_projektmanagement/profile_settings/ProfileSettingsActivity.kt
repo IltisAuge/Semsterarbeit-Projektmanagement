@@ -41,14 +41,14 @@ class ProfileSettingsActivity : Fragment() {
     private lateinit var emailInput: EditText
     private lateinit var phoneInput: EditText
 
-    private var hobbys: ArrayList<String> = arrayListOf(
+    private lateinit var hobbys: List<String> /*= arrayListOf(
         "Acroyoga", "Apnoetauchen", "Badminton", "Baseball", "Basketball", "Bauchtanz", "Bergsteigen", "BMX", "Bodybuilding", "Boxen", "Cheerleading", "Darts",
         "Eishockey", "Eiskunstlaufen", "Skateboard", "Einrad", "Fahrrad", "Fallschirmspringen", "Fechten", "Fitness", "Football", "Fußball", "Golf", "Hobby Horsing", "Hula Hoop", "Inline Skates", "Joggen", "Kite Surfen",
         "Longboard", "Paintball", "Parkour", "Motorrad", "Pilates", "Reiten", "Rudern", "Gaming", "Reisen", "Kochen", "Backen", "Ski", "Snowboard", "Segeln", "Schwimmen", "Tanzen", "Tennis", "Tauchen",
         "Triathlon", "Leichtathletik"
-    )
+    )*/
 
-    private var companies: ArrayList<String> = arrayListOf("Bosch", "Allianz", "Telekom", "Porsche", "Daimler")
+    private lateinit var companies: List<String> /*= arrayListOf("Bosch", "Allianz", "Telekom", "Porsche", "Daimler")*/
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) : View {
         binding = ActivityProfileSettingsBinding.inflate(inflater)
@@ -62,7 +62,9 @@ class ProfileSettingsActivity : Fragment() {
             println("An error occurred! Local user is null!")
             return binding.root
         }
-
+        val availableTags = UserUtils.getAvailableTags(requireContext())
+        hobbys = availableTags.first
+        companies = availableTags.second
         chooseImgBtn = binding.chooseProfilePictureBtn
         deleteImgBtn = binding.deleteProfilePictureBtn
         profileImg = binding.profilePicture
@@ -96,6 +98,7 @@ class ProfileSettingsActivity : Fragment() {
     fun setupTagsListView() {
         tagsListView.removeAllViews()
         for ((idx, item) in activeTagsList.withIndex()) {
+            println("Added tag item $item")
             // Item layout
             val itemView = TextView(requireContext())
             // Long click listener to delete items

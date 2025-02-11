@@ -13,6 +13,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivitySwipeBinding
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.UserUtils
 import org.json.JSONObject
+import java.io.File
 import kotlin.random.Random
 
 class SwipeActivity : Fragment() {
@@ -40,7 +41,7 @@ class SwipeActivity : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = ActivitySwipeBinding.inflate(inflater, container, false)
-
+        getTagsFile() // Create file if not exists
         list = mutableListOf()
         listView = binding.itemlist
         listAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, list)
@@ -55,6 +56,15 @@ class SwipeActivity : Fragment() {
             prevUUID = selectNewUser(prevUUID)
         }
         return binding.root
+    }
+
+    fun getTagsFile() : File {
+        val tagsFile = File(requireContext().filesDir, "tags.json")
+        if (!tagsFile.exists()) {
+            tagsFile.createNewFile()
+            tagsFile.writeText("{ }")
+        }
+        return tagsFile
     }
 
     fun selectNewUser(prevUUID: String?) : String? {
@@ -87,13 +97,17 @@ class SwipeActivity : Fragment() {
         profileImg.setImageBitmap(bitmap)
         list.clear()
         list.addAll(getUserInformation(randomUser))
+        println("userInformation: $list")
         listAdapter.notifyDataSetChanged()
         return randomUser.getString("uuid")
     }
 
     fun getUserInformation(randomUser: JSONObject) : MutableList<String> {
-        list = mutableListOf<String>()
+        val list = mutableListOf<String>()
         list.add("Email: ${randomUser.getString("email")}")
+        if (randomUser.has("phone")) {
+            list.add("Telefonnummer: ${randomUser.getString("phone")}")
+        }
         list.add("Fakultät: ${randomUser.getString("fakultaet")}")
         list.add("Studiengang: ${randomUser.getString("studiengang")}")
         list.add("Jahrgang: ${randomUser.getString("jahrgang")}")

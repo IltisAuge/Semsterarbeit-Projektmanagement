@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/navigation_test_home"
-        android:name="de.dhbwstuttgart.semesterarbeit_projektmanagement.login_register.TestHomeActivity"
-        android:label="Test-Home"
-        tools:layout="@layout/activity_test_home" >
+        android:name="de.dhbwstuttgart.semesterarbeit_projektmanagement.HomeActivity"
+        android:label="Home"
+        tools:layout="@layout/activity_home" >
     </fragment>
 
     <fragment
