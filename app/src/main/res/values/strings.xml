@@ -1,8 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE resources [
+    <!ENTITY app_name "UniConnect">
+]>
+
 <resources>
-    <string name="app_name">MeetUp!</string>
+    <string name="app_name">&app_name;</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
     <string name="title_profile_settings">Profil Einstellungen</string>
     <string name="title_swipe_activity">Match</string>
+    <string name="login_headline">Bei &app_name; anmelden</string>
+    <string name="register_headline">Bei &app_name; registrieren</string>
+    <string name="home_subtitle">bei &app_name;!</string>
 </resources>

@@ -34,7 +34,7 @@
                     android:minHeight="?attr/actionBarSize"
                     android:theme="?attr/actionBarTheme"
                     android:layout_margin="20dp"
-                    app:subtitle="@string/app_name"
+                    app:subtitle="@string/home_subtitle"
                     app:subtitleCentered="true"
                     app:title="Willkommen $name"
                     app:titleCentered="true" />
