@@ -35,6 +35,7 @@ class SwipeActivity : Fragment() {
     private var prevIdx = 0
     private lateinit var gestureDetector: GestureDetector
     private lateinit var prevUUID: String
+    private lateinit var randomUser: JSONObject
 
     /*override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return keyCode != KeyEvent.KEYCODE_BACK
@@ -101,6 +102,7 @@ class SwipeActivity : Fragment() {
             println("No user found!")
             return null
         }
+        this.randomUser = randomUser
 
         println("Test " + randomUser.get("uuid"))
         println("Prev:" + prevUUID)
@@ -136,8 +138,8 @@ class SwipeActivity : Fragment() {
     }
 
     private inner class SwipeGestureListener : GestureDetector.SimpleOnGestureListener() {
-        private val SWIPE_THRESHOLD = 100
-        private val SWIPE_VELOCITY_THRESHOLD = 100
+        private val SWIPE_THRESHOLD = 300
+        private val SWIPE_VELOCITY_THRESHOLD = 300
 
         override fun onFling(
             e1: MotionEvent?,
@@ -145,18 +147,17 @@ class SwipeActivity : Fragment() {
             velocityX: Float,
             velocityY: Float
         ): Boolean {
-            if (e1 == null || e2 == null) return false
+            if (e1 == null) return false
 
             val diffX = e2.x - e1.x
             val diffY = e2.y - e1.y
 
             if (Math.abs(diffX) > Math.abs(diffY)) { // Horizontaler Swipe
                 if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-                    if (diffX > 0) {
-                        prevUUID = selectNewUser(prevUUID).toString()
-                    } else {
-                        prevUUID = selectNewUser(prevUUID).toString()
+                    if (diffX < 0) {
+                        Toast.makeText(requireContext(), "Du willst ${randomUser.getString("name")} kennenlernen", Toast.LENGTH_SHORT).show()
                     }
+                    prevUUID = selectNewUser(prevUUID).toString()
                     return true
                 }
             }

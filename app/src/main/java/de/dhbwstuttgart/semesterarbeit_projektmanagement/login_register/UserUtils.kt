@@ -67,8 +67,8 @@ object UserUtils {
         }
         val availableTags = getAvailableTags(applicationContext)
         val allTags = availableTags.first + availableTags.second
-        val json = applicationContext.resources.assets.open("available_tags.json").bufferedReader().use { it.readText() }
-        val tagsFileObj = JSONObject(json)
+        val tagsFileObj = FileUtil.readJSON("tags.json", applicationContext)
+        println("tags.json $tagsFileObj")
         Thread {
             for (i in 0 until count) {
                 var name = randomNames[i]
@@ -106,6 +106,7 @@ object UserUtils {
                     selectedTags.add(currentTag)
                     activeTags.put(currentTag)
                 }
+                println("put active tags $activeTags")
                 tagsFileObj.put(uuid.toString(), activeTags)
                 // Set random profile picture
                 val imgURL = "https://thispersondoesnotexist.com/"
@@ -121,6 +122,7 @@ object UserUtils {
                 }
                 Thread.sleep(100)
             }
+            println("write tags.json $tagsFileObj")
             FileUtil.writeJSON("tags.json", tagsFileObj, applicationContext)
         }.start()
     }
