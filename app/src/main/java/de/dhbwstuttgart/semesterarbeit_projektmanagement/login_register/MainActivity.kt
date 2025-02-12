@@ -13,6 +13,7 @@ import de.dhbwstuttgart.semesterarbeit_projektmanagement.FileUtil
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.R
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityMainBinding
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivityNavigationMainBinding
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 
@@ -49,6 +50,11 @@ class MainActivity : AppCompatActivity() {
             println("Created users.json")
             UserUtils.createRandomUsers(applicationContext, 20)
         } else {
+            try {
+                FileUtil.readJSON("users.json", applicationContext)
+            } catch (e: JSONException) {
+                FileUtil.writeJSON("users.json", JSONObject(), applicationContext)
+            }
             val allUsers = UserUtils.getAllUsers(applicationContext, false)
             if (allUsers.size < 20) {
                 val toCreate = 20 - allUsers.size
