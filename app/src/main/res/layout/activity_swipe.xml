@@ -7,6 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
+        android:paddingBottom="60dp"
         android:orientation="vertical">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -31,7 +32,7 @@
                     android:id="@+id/home_headline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="20dp"
+                    android:layout_margin="5dp"
                     android:background="@android:color/transparent"
                     android:minHeight="?attr/actionBarSize"
                     android:theme="?attr/actionBarTheme"
@@ -42,7 +43,8 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="200dp">
+                    android:layout_height="200dp"
+                    android:layout_marginBottom="20dp">
 
                     <ImageView
                         android:id="@+id/profile_picture"
@@ -62,15 +64,9 @@
                 <ListView
                     android:id="@+id/itemlist"
                     android:layout_width="match_parent"
-                    android:layout_height="283dp">
+                    android:layout_height="wrap_content">
 
                 </ListView>
-
-                <Button
-                    android:id="@+id/nextUser_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Next User" />
 
             </LinearLayout>
 

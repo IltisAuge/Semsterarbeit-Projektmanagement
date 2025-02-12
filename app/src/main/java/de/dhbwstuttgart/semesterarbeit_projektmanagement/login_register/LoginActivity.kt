@@ -38,7 +38,6 @@ class LoginActivity : ComponentActivity() {
                 return@setOnClickListener
             }
             val user = UserUtils.getUserbyEmail(applicationContext, emailInput.text.toString())
-            println("userbyemail: $user")
             if (user == null ||
                 user.getString("password") != UserUtils.hash(passwordInput.text.toString())) {
                 Toast.makeText(applicationContext, "Überprüfe deine Anmeldedaten!", Toast.LENGTH_SHORT).show()

@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.ImageView
 import android.widget.ListView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.android.material.appbar.MaterialToolbar
 import de.dhbwstuttgart.semesterarbeit_projektmanagement.databinding.ActivitySwipeBinding
@@ -61,10 +62,13 @@ class SwipeActivity : Fragment() {
 
         prevUUID = selectNewUser(null).toString()
 
-        val settingsButton = binding.nextUserButton
+        Toast.makeText(requireContext(), "Rechts swipen: Kennenlernen", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Links swipen: Nächste Person", Toast.LENGTH_SHORT).show()
+
+        /*val settingsButton = binding.nextUserButton
         settingsButton.setOnClickListener {
             //prevUUID = selectNewUser(prevUUID).toString()
-        }
+        }*/
         return binding.root
     }
 
@@ -124,11 +128,9 @@ class SwipeActivity : Fragment() {
         val tagsString = StringBuilder()
         val userTags = UserUtils.getUserTags(requireContext(), randomUser.getString("uuid"))
         for (i in 0 until userTags.length()) {
-            tagsString.append(userTags[i])
-            if (i != userTags.length() - 1) {
-                tagsString.append(", ")
-            }
+            tagsString.append("${userTags[i]}, ")
         }
+        tagsString.append("DHBW Student")
         list.add("Interessen: $tagsString")
         return list
     }

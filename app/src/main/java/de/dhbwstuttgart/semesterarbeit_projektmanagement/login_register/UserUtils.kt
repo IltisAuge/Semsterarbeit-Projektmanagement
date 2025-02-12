@@ -41,10 +41,14 @@ object UserUtils {
         return Pair(hobbys, companies)
     }
 
-    fun createRandomUsers(applicationContext: Context) {
+    fun createRandomUsers(applicationContext: Context, count: Int) {
         val randomNames = mutableListOf<String>()
         applicationContext.resources.assets.open("random-names.txt").bufferedReader().use {
             randomNames.addAll(it.readText().split("\n"))
+        }
+        if (count > randomNames.size) {
+            println("Can only create a maximum of ${randomNames.size} users!")
+            return
         }
         val fakultaetJson = applicationContext.resources.assets.open("fakultaet-mapping.json").bufferedReader().use { it.readText() }
         val fakultaetJsonObj = JSONObject(fakultaetJson)
@@ -66,7 +70,7 @@ object UserUtils {
         val json = applicationContext.resources.assets.open("available_tags.json").bufferedReader().use { it.readText() }
         val tagsFileObj = JSONObject(json)
         Thread {
-            for (i in 0 until 10) {
+            for (i in 0 until count) {
                 var name = randomNames[i]
                 name = name.substring(0, name.length - 1)
                 val email = "$name@lehre.dhbw-stuttgart.de"
@@ -93,7 +97,7 @@ object UserUtils {
                 for (i in 0 until activeTags.length()) {
                     selectedTags.add(activeTags.getString(i))
                 }
-                val rndTagsCount = random.nextInt(allTags.size)
+                val rndTagsCount = random.nextInt(allTags.size / 4) + 1
                 for (i in 0 until rndTagsCount) {
                     var currentTag: String
                     do {

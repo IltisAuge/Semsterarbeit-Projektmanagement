@@ -31,47 +31,47 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Check if local-user.json file exists and contains "uuid"
+        val file = File(applicationContext.filesDir, "local-user.json")
+        if (!file.exists()) {
+            file.createNewFile()
+            file.writeText("{ }")
+        }
+
         // Create file to store all users
         // This file should be migrated to a database in a real-world application
         println("Start Main")
         val usersFile = File(applicationContext.filesDir, "users.json")
         println("users exists? ${usersFile.exists()}")
-        usersFile.delete() // TODO: Remove
         if (!usersFile.exists()) {
             usersFile.createNewFile()
             usersFile.writeText("{ }")
             println("Created users.json")
-            UserUtils.createRandomUsers(applicationContext)
-        }
-
-        // Fix users.json
-        // TODO: Remove in production
-        val usersObj = FileUtil.readJSON("users.json", applicationContext)
-        usersObj.remove("users")
-        FileUtil.writeJSON("users.json", usersObj, applicationContext)
-        File(applicationContext.filesDir, "tags.json").delete()
-
-        // Check if local-user.json file exists and contains "uuid"
-        val file = File(applicationContext.filesDir, "local-user.json")
-        file.delete() // TODO: Remove
-        if (file.exists()) {
-            val jsonObj = JSONObject(file.readText())
-            println(jsonObj)
-            if (jsonObj.has("uuid")) {
-                println("user is in local file: uuid ${jsonObj.getString("uuid")}")
-                // User has an account/is logged in: Start HomeActivity with "uuid" extra
-                val user = UserUtils.getUserbyUUID(applicationContext, jsonObj.getString("uuid"))
-                if (user == null) {
-                    return
-                }
-                val intent = UserUtils.loginAndGetIntent(applicationContext, user)
-                intent.putExtra("uuid", jsonObj.getString("uuid"))
-                startActivity(intent)
-                return
+            UserUtils.createRandomUsers(applicationContext, 20)
+        } else {
+            val allUsers = UserUtils.getAllUsers(applicationContext, false)
+            if (allUsers.size < 20) {
+                val toCreate = 20 - allUsers.size
+                println("Creating $toCreate random users...")
+                UserUtils.createRandomUsers(applicationContext, toCreate)
             }
         }
-        file.createNewFile()
-        file.writeText("{ }")
+
+        val jsonObj = JSONObject(file.readText())
+        println("localuser: $jsonObj")
+        if (jsonObj.has("uuid")) {
+            println("user is in local file: uuid ${jsonObj.getString("uuid")}")
+            // User has an account/is logged in: Start HomeActivity with "uuid" extra
+            val user = UserUtils.getUserbyUUID(applicationContext, jsonObj.getString("uuid"))
+            if (user == null) {
+                return
+            }
+            val intent = UserUtils.loginAndGetIntent(applicationContext, user)
+            intent.putExtra("uuid", jsonObj.getString("uuid"))
+            startActivity(intent)
+            return
+        }
+
         // User has no account/is not logged in: Start LoginActivity
         println("Start LoginActivity")
         startActivity(Intent(applicationContext, LoginActivity::class.java))
