@@ -39,6 +39,12 @@ class MainActivity : AppCompatActivity() {
             file.writeText("{ }")
         }
 
+        val tagsFile = File(applicationContext.filesDir, "tags.json")
+        if (!tagsFile.exists()) {
+            tagsFile.createNewFile()
+            tagsFile.writeText("{ }")
+        }
+
         // Create file to store all users
         // This file should be migrated to a database in a real-world application
         println("Start Main")
